@@ -1,0 +1,59 @@
+#==============================================================================
+# ** Scene_Quest
+#------------------------------------------------------------------------------
+# ** Displays the window with the quest info
+#==============================================================================
+
+class Scene_Quest < Scene_Base
+  #--------------------------------------------------------------------------
+  # * Object Initialization
+  #     menu_index : command cursor's initial position
+  #--------------------------------------------------------------------------
+  def initialize(menu_index = 0)
+    @menu_index = menu_index
+  end
+  #--------------------------------------------------------------------------
+  # * Start processing
+  #--------------------------------------------------------------------------
+  def start
+    super
+    create_menu_background
+    create_command_window
+  end
+  #--------------------------------------------------------------------------
+  # * Create Command Window
+  #--------------------------------------------------------------------------
+  def create_command_window
+    @quest_window = Window_Quest.new(200, 75, 344, 341)
+    @quest_window.index = @menu_index
+  end
+  #--------------------------------------------------------------------------
+  # * Update Command Selection
+  #--------------------------------------------------------------------------
+  def update_command_selection
+    if Input.trigger?(Input::B)
+      Sound.play_cancel
+      $scene = Scene_Menu.new(4)
+    elsif Input.trigger?(Input::C)
+      Sound.play_decision  
+      $scene = Scene_QuestInfo.new($quest_log[@menu_index])
+    end
+  end
+  #--------------------------------------------------------------------------
+  # * Frame Update
+  #--------------------------------------------------------------------------
+  def update
+    super
+    update_menu_background
+    @quest_window.update
+    update_command_selection
+  end
+  #--------------------------------------------------------------------------
+  # * Termination Processing
+  #--------------------------------------------------------------------------
+  def terminate
+    super
+    dispose_menu_background
+    @quest_window.dispose
+  end
+end

@@ -1,0 +1,42 @@
+#==============================================================================
+# ** Quest_Log
+#------------------------------------------------------------------------------
+# ** Holds all quests the player has taken, including completed and incomplete
+#==============================================================================
+
+class Quest_Log 
+  #----------------------------------------------------------------------------
+  # * Object Initialization
+  #----------------------------------------------------------------------------
+  def initialize
+    @quests = []
+  end
+  #----------------------------------------------------------------------------
+  # * Get quest with specific ID
+  #     id : Index of quest 
+  #----------------------------------------------------------------------------
+  def [](id)
+    @quests[id]
+  end
+  #----------------------------------------------------------------------------
+  # * Set index in array to quest
+  #     index : index to set
+  #     quest : quest to add
+  #----------------------------------------------------------------------------
+  def []=(index, quest)
+    if @quests[index] == nil
+      @quests[index] = quest
+    else 
+      return false
+    end
+  end
+  
+  def is_empty
+    return @quests.size == 0
+  end
+  
+  def quests
+    return @quests
+  end
+end
+

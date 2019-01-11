@@ -1,0 +1,48 @@
+#==============================================================================
+# ** Window_Quest
+#------------------------------------------------------------------------------
+# ** Displays all of the quests the player has completed or are active
+#==============================================================================
+
+class Window_Quest < Window_Selectable
+  #----------------------------------------------------------------------------
+  # * Object Initialization
+  #----------------------------------------------------------------------------
+  def initialize(x, y, width, height)
+    super(x, y, width, height)
+    @column_max = 1
+    self.index = 0
+    @page = 1  # 1 = All, 2 = Active, 3 = Completed
+    refresh
+  end
+  #----------------------------------------------------------------------------
+  # * Get Quest
+  #----------------------------------------------------------------------------
+  def quest
+    $quest_log[self.index]
+  end
+  # * Refresh
+  #----------------------------------------------------------------------------
+  def refresh
+    @item_max = $quest_log.quests.size
+    
+    create_contents
+    for i in 0...@item_max
+      draw_item(i)
+    end
+  end
+  #----------------------------------------------------------------------------
+  # * Draw Quest
+  #     index : quest number
+  #----------------------------------------------------------------------------
+  def draw_item(index)
+    rect = item_rect(index)
+    self.contents.clear_rect(rect)
+    quest = $quest_log[index]
+    if quest != nil
+      rect.width -= 4
+      draw_icon(quest.icon_id, rect.x, rect.y)
+      self.contents.draw_text(rect.x + 25, rect.y, 300, WLH, quest.title, 0)
+    end
+  end 
+end

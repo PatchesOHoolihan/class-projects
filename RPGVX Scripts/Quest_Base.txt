@@ -1,0 +1,153 @@
+#==============================================================================
+# ** Quest_Base
+#------------------------------------------------------------------------------
+# ** The base quest class. 
+#==============================================================================
+
+class Quest_Base
+  #----------------------------------------------------------------------------
+  # * Constants
+  #----------------------------------------------------------------------------
+  ITEM_QUEST = 0        #Item collection quest - includes spoils + key items
+  HUNT_QUEST = 1        #Monster hunting quest - includes enemies + bosses
+  INTERACT_QUEST = 2    #NPC/Object interaction quest - NPC triggers completion
+  #----------------------------------------------------------------------------
+  # * Public Instance Variables
+  #----------------------------------------------------------------------------
+  attr_accessor :description
+  attr_accessor :objective
+  attr_accessor :icon_id
+  attr_accessor :title
+  attr_accessor :completed
+  attr_accessor :active
+  attr_accessor :turn_in
+  attr_accessor :type
+  attr_accessor :quest_id
+  #----------------------------------------------------------------------------
+  # * Object Initialization
+  #----------------------------------------------------------------------------
+  def initialize
+    @title = ""
+    @description = ""
+    @objective = ""
+    @icon_id = 0
+    @completed = false
+    @turn_in = false
+    @active = false
+    @type = 3
+    @rewards = []
+    @data = {}
+    @quest_id = 0
+  end
+  #----------------------------------------------------------------------------
+  # * Get current/required values for specific ID as array
+  #     object_id : ID of item/monster to return
+  #----------------------------------------------------------------------------
+  def get_values(object_id)
+    if @data[object_id] == nil
+      return false
+    else
+      return @data[object_id]
+    end 
+  end
+  #----------------------------------------------------------------------------
+  # * Set quest data
+  #     object_id          : ID of item/monster to set
+  #     num_needed         : Number of items/monsters needed to complete
+  #     lose_on_completion : True if item will be lost on completing quest
+  #----------------------------------------------------------------------------
+  def add_values(object_id, num_needed, lose_on_completion = true)
+    if @data[object_id] == nil
+      @data[object_id] = [0, num_needed, lose_on_completion]
+    end
+  end
+  #----------------------------------------------------------------------------
+  # * Adds reward to array
+  #     reward : Reward to add
+  #----------------------------------------------------------------------------
+  def add_reward(reward)
+    @rewards.push(reward) unless @rewards.include?(reward)
+  end
+  #----------------------------------------------------------------------------
+  # * Checks player's inventory and updates quest status
+  #----------------------------------------------------------------------------
+  def update_items
+    return false if @type != ITEM_QUEST
+    for id in @data.keys.sort
+      value = @data[id]
+      value[0] = $game_party.item_number($data_items[id])
+      if value[0] > value[1]
+        value[0] = value[1]
+      end
+      @data[id] = value
+    end
+    check_completion
+  end
+  #----------------------------------------------------------------------------
+  # * Updates number of monsters killed for quest
+  #     monster_id : ID of monster last killed
+  #----------------------------------------------------------------------------
+  def update_monsters(monster_id) 
+    return false if @type != HUNT_QUEST || @data[monster_id] == nil
+    value = @data[monster_id]
+    value[0] += 1 unless value[0] == value[1] 
+    check_completion
+  end
+  #----------------------------------------------------------------------------
+  # * Checks status of quest and if it can be turned in
+  #----------------------------------------------------------------------------
+  def check_completion
+    done = true
+    for val in @data.values
+      done = false if val[0] != val[1]
+    end
+    @turn_in = done
+  end
+  #----------------------------------------------------------------------------
+  # * Completes quest and gives reward - activated after turning in quest
+  #----------------------------------------------------------------------------
+  def complete
+    @completed = true
+    @active = false
+    if @type == ITEM_QUEST
+      for item in @data
+        if @data[item][2] == true
+          $game_party.lose_item($data_items[item], @data[item][0])
+        end
+      end
+    end
+    give_rewards
+  end
+  #----------------------------------------------------------------------------
+  # * Gives rewards to players 
+  # Reward Format = number + type code
+  # "exp" = Experience : number = amount
+  # "gld" = Money      : number = amount
+  # "itm" = Item       : number = item id + quantity
+  # "amr" = Armor      : number = armor id + quantity
+  # "wep" = Weapon     : number = weapon id + quantity
+  # Example: "250gld" = 250 Gold
+  #          "02001arm" = 1 armor with id 20
+  #----------------------------------------------------------------------------
+  def give_rewards
+    for reward in @rewards
+      reward_type = reward[-3..-1].downcase
+      reward_num = reward[0...-3].to_i
+      case reward_type
+      when "exp"
+        for member in $game_party.members
+          member.change_exp(reward_num, true)
+        end
+      when "gld"
+        $game_party.gain_gold(reward_num)
+      when "itm" 
+        $game_party.gain_item($data_items[reward_num/100], reward_num%100)
+      when "arm"
+        $game_party.gain_item($data_armors[reward_num/100], reward_num%100)
+      when "wep"
+        $game_party.gain_item($data_weapons[reward_num/100], reward_num%100)
+      end
+    end
+  end
+end
+
