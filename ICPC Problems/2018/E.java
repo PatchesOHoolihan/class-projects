@@ -227,12 +227,12 @@ public class E {
 			}
 			
 			//If there are clues left to solved...
-			if(!clueRatings.isEmpty()) {
+			if(!unsolvedClues.isEmpty()) {
 				//Sort the list of clues in descending order by priority (handled by Clue compareTo)
-				clueRatings.sort(null);
+				unsolvedClues.sort(null);
 				
 				//Get the first clue in the list, which will have the highest priority
-				Clue clue = clueRatings.get(0);
+				Clue clue = unsolvedClues.get(0);
 				System.out.println(clue);
 				int n = clue.length;
 				//Fill in all of the clue's spaces with letters, indicating it has been solved
@@ -249,5 +249,5 @@ public class E {
 			}
 		
 		//Repeat this process while there are still unsolved clues (a clue was solved in this iteration)
-		} while (!clueRatings.isEmpty());
+		} while (!unsolvedClues.isEmpty());
 	}
